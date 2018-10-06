@@ -23,6 +23,34 @@ const Inner = styled('div')`
   padding: 2rem;
 `;
 
+injectGlobal`
+  @font-face {
+    font-family: 'radnika-next';
+    src: url('/static/radnikanext-medium-webfont.woff2')
+    format('woff2');
+    font-weight: normal;
+    font-style: normal;
+  }
+  html {
+    box-sizing: border-box;
+    font-size: 10px;
+  }
+  *, *:before, *:after {
+    box-sizing: inherit;
+  }
+  body {
+    padding: 0;
+    font-family: 'radnika_next';
+    font-size: 1.5rem;
+    line-height: 2;
+    margin: 0;
+  }
+  a {
+    color: ${theme.black}
+    text-decoration: none;
+  }
+`;
+
 class Page extends Component {
   render() {
     return (
