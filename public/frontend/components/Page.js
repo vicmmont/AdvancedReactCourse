@@ -46,7 +46,7 @@ injectGlobal`
     margin: 0;
   }
   a {
-    color: ${theme.black}
+    color: ${theme.black};
     text-decoration: none;
   }
 `;
