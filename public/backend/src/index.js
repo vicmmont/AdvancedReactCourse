@@ -9,7 +9,7 @@ const server = createServer();
 
 server.start(
   {
-    cors: { credentials: true, origin: process.env.FRONT_END_URL }
+    cors: { credentials: true, origin: process.env.FRONTEND_URL }
   },
   details => {
     console.log(
