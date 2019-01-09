@@ -1,14 +1,25 @@
 import Link from 'next/link';
 import NavStyles from './styles/NavStyles';
+import User from './User';
+import { Fragment } from 'react';
 
 const Nav = () => (
-  <NavStyles>
-    <Link href="/items">Shop</Link>
-    <Link href="/sell">Sell</Link>
-    <Link href="/signup">Sign Up</Link>
-    <Link href="/orders">Orders</Link>
-    <Link href="/me">Account</Link>
-  </NavStyles>
+  <User>
+    {({ data: { me } }) => (
+      <NavStyles>
+        <Link href="/items">Shop</Link>
+        {me && (
+          <Fragment>
+            <Link href="/sell">Sell</Link>
+            <Link href="/orders">Orders</Link>
+            <Link href="/me">Account</Link>
+          </Fragment>
+        )}
+
+        {!me && <Link href="/signup">Sign In</Link>}
+      </NavStyles>
+    )}
+  </User>
 );
 
 export default Nav;
