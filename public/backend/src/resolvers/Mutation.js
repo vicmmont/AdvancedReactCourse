@@ -120,8 +120,8 @@ const Mutations = {
 
   async resetPassword(parent, args, ctx, info) {
     // Check if the passwords match
-    const { password, confirmedPassword } = args;
-    if (password !== confirmedPassword) {
+    const { password, confirmPassword } = args;
+    if (password !== confirmPassword) {
       throw new Error(
         'These passwords do not match. Please enter matching passwords.'
       );

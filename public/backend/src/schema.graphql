@@ -27,7 +27,7 @@ type Mutation {
   resetPassword(
     resetToken: String!
     password: String!
-    confirmedPassword: String!
+    confirmPassword: String!
   ): User!
 }
 
