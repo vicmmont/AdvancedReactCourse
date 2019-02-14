@@ -2,13 +2,20 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { randomBytes } = require('crypto');
 const { promisify } = require('util');
+const { transport, makeANiceEmail } = require('../mail');
+const { hasPermission } = require('../utils');
 
 const Mutations = {
   async createItem(parent, args, ctx, info) {
-    // TODO: Check if they are logged in
+    if (!ctx.request.userId) {
+      throw new Error('You must be logged in to do that!');
+    }
+
     const item = await ctx.db.mutation.createItem(
       {
         data: {
+          // this is how we create a relationship between the item and the user
+          user: { connect: { id: ctx.request.userId } },
           ...args
         }
       },
@@ -36,10 +43,18 @@ const Mutations = {
   async deleteItem(parent, args, ctx, info) {
     const where = { id: args.id };
     // find item
-    const item = await ctx.db.query.item({ where }, `{id title}`);
+    const item = await ctx.db.query.item({ where }, `{id title user { id }}`);
     // check if they own item or have permissions
-    // delete it
-    return ctx.db.mutation.deleteItem({ where }, info);
+    const ownsItem = item.user.id === ctx.request.userId;
+    const hasPermissions = ctx.request.user.permissions.some(permission =>
+      ['ADMIN', 'ITEMDELETE'].includes(permission)
+    );
+
+    if (ownsItem || hasPermissions) {
+      return ctx.db.mutation.deleteItem({ where }, info);
+    }
+
+    throw new Error("You don't have permission to delete this item");
   },
 
   async signup(parent, args, ctx, info) {
@@ -115,6 +130,17 @@ const Mutations = {
       data: { resetToken, resetTokenExpiry }
     });
 
+    const mailResponse = await transport.sendMail({
+      from: 'vicmmonterroso@gmail.com',
+      to: user.email,
+      subjectLine: 'Your password resetToken',
+      html: makeANiceEmail(
+        `Your password reset token is here. \n\n <a href="${
+          process.env.FRONTEND_URL
+        }/reset?resetToken=${resetToken}">Click here to reset!</a>`
+      )
+    });
+
     return { message: 'Reset under way!' };
   },
 
@@ -159,6 +185,27 @@ const Mutations = {
 
     // return the new user
     return user;
+  },
+
+  async updatePermissions(parent, args, ctx, info) {
+    // Check if they are logged in
+    if (!ctx.request.user) {
+      throw new Error('You must be logged in!');
+    }
+
+    // Query the current user
+    const user = ctx.request.user;
+
+    // Check if they have permissions to do this
+    hasPermission(user, ['ADMIN', 'PERMISSIONUPDATE']);
+    // Update the permissions
+    return ctx.db.mutation.updateUser(
+      {
+        where: { id: args.userId },
+        data: { permissions: { set: args.permissions } }
+      },
+      info
+    );
   }
 };
 
