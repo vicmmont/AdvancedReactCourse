@@ -243,6 +243,28 @@ const Mutations = {
         }
       }
     });
+  },
+
+  async removeFromCart(parent, args, ctx, info) {
+    // Ensure the user is signed in
+    const { userId } = ctx.request;
+
+    if (!userId) {
+      throw new Error('You must be signed in to remove an item from the cart.');
+    }
+    // is the item in the user's cart?
+    const [cartItem] = await ctx.db.query.cartItems({
+      where: {
+        user: { id: userId },
+        id: args.id
+      }
+    });
+
+    if (!cartItem) {
+      throw new Error('You can only delete items in your cart');
+    }
+    // remove item from cart
+    return ctx.db.mutation.deleteCartItem({ where: { id: args.id } });
   }
 };
 
