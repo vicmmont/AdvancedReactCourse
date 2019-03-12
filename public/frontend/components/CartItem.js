@@ -19,22 +19,33 @@ const CartItemWrapper = styled('li')`
   }
 `;
 
-const CartItem = ({ cartItem }) => (
-  <CartItemWrapper>
-    <img src={cartItem.item.image} alt="" width="100px" />
-    <div className="cart-item-details">
-      <h3>{cartItem.item.title}</h3>
-      <p>
-        {formatMoney(cartItem.item.price * cartItem.quantity)}
-        {' - '}
-        <em>
-          {cartItem.quantity} &times; {formatMoney(cartItem.item.price)}
-        </em>
-      </p>
-    </div>
-    <RemoveFromCart id={cartItem.id} />
-  </CartItemWrapper>
-);
+const CartItem = ({ cartItem }) => {
+  // Check if that item exists
+  if (!cartItem.item) {
+    return (
+      <CartItemWrapper>
+        <p>This item has been removed</p>
+        <RemoveFromCart id={cartItem.id} />
+      </CartItemWrapper>
+    );
+  }
+  return (
+    <CartItemWrapper>
+      <img src={cartItem.item.image} alt="" width="100px" />
+      <div className="cart-item-details">
+        <h3>{cartItem.item.title}</h3>
+        <p>
+          {formatMoney(cartItem.item.price * cartItem.quantity)}
+          {' - '}
+          <em>
+            {cartItem.quantity} &times; {formatMoney(cartItem.item.price)}
+          </em>
+        </p>
+      </div>
+      <RemoveFromCart id={cartItem.id} />
+    </CartItemWrapper>
+  );
+};
 
 CartItem.propTypes = {
   cartItem: PropTypes.object.isRequired

@@ -3,6 +3,7 @@ import gql from 'graphql-tag';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import { Mutation } from 'react-apollo';
+import { CURRENT_USER_QUERY } from './User';
 
 const BigButton = styled('button')`
   font-size: 3rem;
@@ -29,11 +30,31 @@ class RemoveFromCart extends React.Component {
     id: PropTypes.string.isRequired
   };
 
+  // This gets called as soon as we get a response back from the
+  // server as the mutation has been performed
+  update = (cache, payload) => {
+    // first read the cache
+    const data = cache.readQuery({ query: CURRENT_USER_QUERY });
+    // remove that item from the cart
+    const cartItemId = payload.data.removeFromCart.id;
+    data.me.cart = data.me.cart.filter(cartItem => cartItem.id !== cartItemId);
+    // write update to the cache
+    cache.writeQuery({ query: CURRENT_USER_QUERY, data });
+  };
+
   render() {
     return (
       <Mutation
         mutation={REMOVE_FROM_CART_MUTATION}
         variables={{ id: this.props.id }}
+        update={this.update}
+        optimisticResponse={{
+          __typename: 'Mutation',
+          removeFromCart: {
+            __typename: 'CartItem',
+            id: this.props.id
+          }
+        }}
       >
         {(removeFromCart, { loading, error }) => (
           <BigButton
